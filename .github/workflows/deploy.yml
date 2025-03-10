@@ -3,24 +3,26 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # Runs on push to main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 15.207.115.14 >> ~/.ssh/known_hosts
+    - name: Setup SSH Key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 15.207.115.14 >> ~/.ssh/known_hosts
 
-      - name: Deploy to EC2
-  run: |
-    scp -i ${{ secrets.AWS_PRIVATE_KEY }} -r * ec2-user@15.207.115.14:/var/www/html
-
+    - name: Deploy to EC2
+      run: |
+        ssh -i ~/.ssh/id_rsa ec2-user@15.207.115.14 "
+        cd /home/ec2-user/app &&
+        git pull origin main &&
+        sudo systemctl restart myapp"
